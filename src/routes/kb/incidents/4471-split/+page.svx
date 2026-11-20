@@ -1,0 +1,54 @@
+---
+layout: runbook
+title: '#4471 · Two causes of wrong booking dates'
+owner: jihadnaji
+status: proposed
+reviewed: '2026-11-20'
+signature: 'Jihad Naji'
+---
+
+<script>
+  import CauseTable from '#lib/kb/CauseTable.svelte';
+  import QueueTimeline from '#lib/kb/QueueTimeline.svelte';
+  import DedupeExplorer from '#lib/kb/DedupeExplorer.svelte';
+  import RenderStamp from '#lib/kb/RenderStamp.svelte';
+
+  const { signature } = metadata;
+</script>
+
+[Incident #4471](/kb/incidents/4471) records reports of bookings or invites landing on the wrong date. Its queued parser fix addresses one of the two failures in the export. The booking form's date hint needs its own fix.
+
+## What the export shows
+
+The table counts unique report IDs merged into #4471 through 4 October 2026. The classifier looks up the tenant's locale and booking form, then checks how the report reached the desk. The intake tags are shown for comparison because they were guessed from browser information. The last column shows how the desk had filed the reports at export time.
+
+<div class="table-scroll" role="region" aria-label="Reports by cause">
+  <CauseTable ticket={4471} />
+</div>
+
+- **Shared parser.** The parser reads numeric input month first. For a tenant whose locale puts the day first, a date such as `07/04/2026` can land on 4 July when the tenant meant 7 April. Report R-41200 describes that reversal. Parse according to the tenant's date order.
+- **Booking-v3 form hint.** The form shows `MM/DD/YYYY` to day-first tenants, while the form interprets dates day first for those tenants. A customer following the hint can type `01/06/2026` for 6 January and get 1 June. R-41230 describes that outcome. Make the hint match the date order the form accepts.
+
+The one-day moves in the table stay in their current group for this count. The desk flagged them for follow-up because the reports do not establish a common cause for those symptoms.
+
+## When the reports reached the desk
+
+<QueueTimeline ticket={4471} />
+
+Reports started arriving in April. The first merges came in July. Keep the date of the first report visible alongside the merge date so that the merge backlog does not hide how long customers had been affected.
+
+## How to route the next report
+
+The [subject matching rule](/kb/decisions/0001-dedupe-by-subject) misses cases where the same problem has different wording and merges cases where different problems share a subject. The examples below compare both signals using the same cause classifier as the incident table.
+
+<div id="dedupe-explorer" class="table-scroll">
+  <DedupeExplorer />
+</div>
+
+Before merging, look up the tenant and confirm the input path. Route day-first tenants' app and email reports and booking-v2 form reports to the parser investigation. Route day-first booking-v3 form reports to the hint investigation. When the tenant or cause is unclear, read the report and verify the input, expected date, and observed date before merging. Record evidence for one-day shifts and keep those cases under review.
+
+<style>
+  .table-scroll { max-width: 100%; overflow-x: auto; }
+</style>
+
+<RenderStamp {signature} />
