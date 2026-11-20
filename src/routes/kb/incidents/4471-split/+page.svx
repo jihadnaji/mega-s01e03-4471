@@ -2,7 +2,7 @@
 layout: runbook
 title: '#4471 · Two causes of wrong booking dates'
 owner: jihadnaji
-status: proposed
+status: closed
 reviewed: '2026-11-20'
 signature: 'Jihad Naji'
 ---
@@ -16,7 +16,7 @@ signature: 'Jihad Naji'
   const { signature } = metadata;
 </script>
 
-[Incident #4471](/kb/incidents/4471) records reports of bookings or invites landing on the wrong date. Its queued parser fix addresses one of the two failures in the export. The booking form's date hint needs its own fix.
+[Incident #4471](/kb/incidents/4471) records reports of bookings or invites landing on the wrong date. The desk originally queued one parser fix. The export shows two causes, and engineering resolved them separately.
 
 ## What the export shows
 
@@ -30,6 +30,13 @@ The table counts unique report IDs merged into #4471 through 4 October 2026. The
 - **Booking-v3 form hint.** The form shows `MM/DD/YYYY` to day-first tenants, while the form interprets dates day first for those tenants. A customer following the hint can type `01/06/2026` for 6 January and get 1 June. R-41230 describes that outcome. Make the hint match the date order the form accepts.
 
 The one-day moves in the table stay in their current group for this count. The desk flagged them for follow-up because the reports do not establish a common cause for those symptoms.
+
+## Engineering disposition
+
+The [course desk update](https://hq.mega.dev/challenges/what-it-shows) closed #4471 on 5 October 2026.
+
+- [Shared parser · issue #1](https://github.com/jihadnaji/mega-s01e03-4471/issues/1) was fixed by `fix(dates): parse dd/mm for eu locales`.
+- [Booking-v3 date hint · issue #2](https://github.com/jihadnaji/mega-s01e03-4471/issues/2) was marked won't fix because the booking-v3 form was retired.
 
 ## When the reports reached the desk
 
@@ -45,7 +52,7 @@ The [subject matching rule](/kb/decisions/0001-dedupe-by-subject) misses cases w
   <DedupeExplorer />
 </div>
 
-Before merging, look up the tenant and confirm the input path. Route day-first tenants' app and email reports and booking-v2 form reports to the parser investigation. Route day-first booking-v3 form reports to the hint investigation. When the tenant or cause is unclear, read the report and verify the input, expected date, and observed date before merging. Record evidence for one-day shifts and keep those cases under review.
+Before merging, look up the tenant and confirm the input path. For a day-first tenant, check app, email, and booking-v2 form reports against the parser fix. For reports that cite the retired booking-v3 form, verify the form version before linking them to the historical hint issue. When the tenant or cause is unclear, read the report and verify the input, expected date, and observed date before merging. Record evidence for one-day shifts and keep those cases under review.
 
 <style>
   .table-scroll { max-width: 100%; overflow-x: auto; }
